@@ -65,6 +65,8 @@ def fuse(F_Do_i, F_De_i, fusion_weight):
 
 ################### Implementations of CDNet ###################
 
+# VGG-16 backbone (fully connected layers are removed)
+# serves as RGB encoder and Siamese depth encoder
 class Vgg_Extractor(nn.Module):
     def __init__(self):
         super(Vgg_Extractor, self).__init__()
@@ -78,6 +80,9 @@ class Vgg_Extractor(nn.Module):
         return x
 
 
+# Prediction layer: 
+# a fully connected layer to compress the channel of input features to 1, 
+# followed a sigmoid function to restrict results into [0, 1]
 class Pred(nn.Module):
     def __init__(self, in_c):
         super(Pred, self).__init__()
@@ -88,6 +93,9 @@ class Pred(nn.Module):
         return pred
 
 
+# Attention layer:
+# two convolutional layers followed a sigmoid function
+# transform ``f_d_4'' to ``W_d''
 class Attention(nn.Module):
     def __init__(self):
         super(Attention, self).__init__()
@@ -99,6 +107,9 @@ class Attention(nn.Module):
         return att
 
 
+# Feature Agrregation Module
+# resort multi-scale techniques to integrate high-level(4-th and 5-th block) features
+# proposed by ``A Simple Pooling-Based Design for Real-Time Salient Object Detection''(CVPR'19)
 class FAM(nn.Module):
     def __init__(self, in_c=128):
         super(FAM, self).__init__()
@@ -124,6 +135,49 @@ class FAM(nn.Module):
         return res, pred
 
 
+# U-Net decoder block 
+# used in Depth estimation decoder
+class Up(nn.Module):
+    def __init__(self, in_c):
+        super(Up, self).__init__()
+        self.conv = nn.Sequential(nn.Conv2d(in_c, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True),
+                                  nn.Conv2d(64, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True))
+        self.get_pred = Pred(64)
+
+    def forward(self, feat, up_feat):
+        N, C, H, W = feat.shape
+        if up_feat is not None:
+            up_feat = resize(up_feat, [H, W])
+            feat = torch.cat([feat, up_feat], dim=1)
+        feat = self.conv(feat)
+        pred = self.get_pred(feat)
+        return feat, pred
+
+
+# U-Net decoder block 
+# used to integrate low-level depth features(F_fuse_3, F_fuse_2 and F_fuse_1)
+# for generating salient boundary maps
+class Up2(nn.Module):
+    def __init__(self, in_c):
+        super(Up2, self).__init__()
+        self.conv = nn.Sequential(nn.Conv2d(in_c, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True),
+                                  nn.Conv2d(64, 32, 3, 1, 1), nn.BatchNorm2d(32), nn.Sigmoid())
+        self.get_pred = Pred(32)
+
+    def forward(self, feat, up_feat):
+        N, C, H, W = feat.shape
+        if up_feat is not None:
+            up_feat = resize(up_feat, [H, W])
+            feat = torch.cat([feat, up_feat], dim=1)
+        feat = self.conv(feat)
+        pred = self.get_pred(feat)
+        return feat, pred
+
+
+# Decoder block containing a Boundary-enhanced block and a U-Net decoder block
+# utilizes boundary-supervised features(f_b_3, f_b_2 and f_b_1) to enhance
+# low-level RGB features(F_I_3, F_I_2, and F_I_1), and integrate them 
+# to produce salient maps
 class Up3(nn.Module):
     def __init__(self, in_c):
         super(Up3, self).__init__()
@@ -143,42 +197,6 @@ class Up3(nn.Module):
         feat = self.conv(feat)
         pred = self.get_pred(feat)
         return feat, pred
-
-
-class Up(nn.Module):
-    def __init__(self, in_c):
-        super(Up, self).__init__()
-        self.conv = nn.Sequential(nn.Conv2d(in_c, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True),
-                                  nn.Conv2d(64, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True))
-        self.get_pred = Pred(64)
-
-    def forward(self, feat, up_feat):
-        N, C, H, W = feat.shape
-        if up_feat is not None:
-            up_feat = resize(up_feat, [H, W])
-            feat = torch.cat([feat, up_feat], dim=1)
-        feat = self.conv(feat)
-        pred = self.get_pred(feat)
-        return feat, pred
-
-
-class Up2(nn.Module):
-    def __init__(self, in_c):
-        super(Up2, self).__init__()
-        self.conv = nn.Sequential(nn.Conv2d(in_c, 64, 3, 1, 1), nn.BatchNorm2d(64), nn.ReLU(inplace=True),
-                                  nn.Conv2d(64, 32, 3, 1, 1), nn.BatchNorm2d(32), nn.Sigmoid())
-        self.get_pred = Pred(32)
-
-    def forward(self, feat, up_feat):
-        N, C, H, W = feat.shape
-        if up_feat is not None:
-            up_feat = resize(up_feat, [H, W])
-            feat = torch.cat([feat, up_feat], dim=1)
-        feat = self.conv(feat)
-        pred = self.get_pred(feat)
-        return feat, pred
-
-
 class FC(nn.Module):
     def __init__(self):
         super(FC, self).__init__()
@@ -198,6 +216,8 @@ class FC(nn.Module):
         return [self.att_1(feat), self.att_2(feat), self.att_3(feat), self.att_4(feat), self.att_5(feat)]
 
 
+# Depth estimation decoder
+# uses RGB features to estimated saliency-informative depth maps
 class Pdpeth(nn.Module):
     def __init__(self):
         super(Pdpeth, self).__init__()
@@ -232,29 +252,44 @@ class Pdpeth(nn.Module):
         return pdepth_1, pdepth_2, pdepth_3, pdepth_4, pdepth_5, pdepth_6
 
 
+# CDNet
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
+        
+        # RGB encoder
         self.vgg_rgb = Vgg_Extractor()
+        # Siamese depth encoder 
         self.vgg_d = Vgg_Extractor()
+        
+        # Compress channel number of F_I
         self.get_cmprs_r = nn.ModuleList([nn.Conv2d(64, 32, 1), nn.Conv2d(128, 32, 1), nn.Conv2d(256, 32, 1), 
                                           nn.Conv2d(512, 64, 1), nn.Conv2d(512, 64, 1)])
+        # Compress channel number of F_De
         self.get_cmprs_dp = nn.ModuleList([nn.Conv2d(64, 32, 1), nn.Conv2d(128, 32, 1), nn.Conv2d(256, 32, 1), 
                                           nn.Conv2d(512, 64, 1), nn.Conv2d(512, 64, 1)])
+        # Compress channel number of F_Do
         self.get_cmprs_d = nn.ModuleList([nn.Conv2d(64, 32, 1), nn.Conv2d(128, 32, 1), nn.Conv2d(256, 32, 1), 
                                            nn.Conv2d(512, 64, 1), nn.Conv2d(512, 64, 1)])
 
+        # Attention layers
         self.get_att = Attention()
 
+        # FAM
         self.pool_k, self.pool_r = FAM(), FAM()
 
+        # U-net decoder for salient boundary predictions
         self.up = nn.ModuleList([Up3(96), Up3(96), Up3(96)])
+        # Boundary-enhanced and U-net decoder for saliency map predictions
         self.up_kb = nn.ModuleList([Up2(64), Up2(64), Up2(96)])
 
+        # Fully connected layers to produce adaptive fusion weights v_w_i
         self.fc = FC()
+
+        # Depth estimation decoder
         self.get_pdepths = Pdpeth()
 
-    def forward(self, img, depth, pre=False, need_activation=False):
+    def forward(self, img, depth):
         N, _, _, _ = img.shape
         
         # Feed Rgb-image(I) into RGB Encoder
@@ -277,11 +312,11 @@ class Net(nn.Module):
         
         # ---- Depth Map Estimation(Sec-III-B) ----
         # Obtain Estimated-depth-map(De)
-        pseudo_depth = self.get_pdepths(conv1_r, conv2_r, conv3_r, conv4_r, conv5_r)[0]
+        estimated_depth = self.get_pdepths(conv1_r, conv2_r, conv3_r, conv4_r, conv5_r)[0]
         # ------------------end--------------------
 
         # Feed Estimated-depth-map(De) into Siamese Depth Encoder
-        conv1_dp = self.vgg_d(pseudo_depth.repeat(1, 3, 1, 1), 'conv1_1', 'conv1_2_mp')
+        conv1_dp = self.vgg_d(estimated_depth.repeat(1, 3, 1, 1), 'conv1_1', 'conv1_2_mp')
         conv2_dp = self.vgg_d(conv1_dp, 'conv1_2_mp', 'conv2_2_mp')
         conv3_dp = self.vgg_d(conv2_dp, 'conv2_2_mp', 'conv3_3_mp')
         conv4_dp = self.vgg_d(conv3_dp, 'conv3_3_mp', 'conv4_3_mp') 

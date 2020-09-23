@@ -19,7 +19,7 @@ git clone https://github.com/blanclist/CDNet.git
 
 ### 2. Download the datasets
 
-We evaluate our CDNet on seven commonly used datasets: NJU2K, STERE, DES, NLPR, SSD, LFSD, and DUT. You can download these datasets from the links provided in http://dpfan.net/d3netbenchmark/.
+We evaluate our CDNet on seven commonly used datasets: NJU2K, STERE, DES, NLPR, SSD, LFSD, and DUT. These datasets can be download from the links provided in http://dpfan.net/d3netbenchmark/.
 
 ### 3. Download pre-trained models
 

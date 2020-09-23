@@ -1,6 +1,5 @@
 from os.path import join
 
-model_name = 'CDNet'
 test_thread_num = 8  # Thread-num used for test
 device = '0'  # GPU index
 config.batch_size = 10  # Batch-size used for test

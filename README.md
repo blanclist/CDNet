@@ -2,7 +2,7 @@
 
 This is a PyTorch implementation of our CDNet.
 
-In the current stage, the **test code** of our CDNet is publicly available. To make readers easily understand the internal details of the network structure, we keep the variable names to be consistent with the symbols used in the main paper. *The training code will be publicly released upon the acceptance of this paper.*. 
+In the current stage, the **test code** of our CDNet is publicly available. To make readers easily understand the internal details of the network structure, we keep the variable names to be consistent with the symbols used in the main paper. *The training code will be publicly released upon the acceptance of this paper*. 
 
 ## Prerequisites
 

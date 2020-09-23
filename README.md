@@ -19,7 +19,7 @@ git clone https://github.com/blanclist/CDNet.git
 
 ### 2. Download the datasets
 
-We evaluate our CDNet on seven commonly used datasets: NJU2K, STERE, DES, NLPR, SSD, LFSD, and DUT. These datasets can be download from the links provided in http://dpfan.net/d3netbenchmark/.
+We evaluate our CDNet on seven commonly used datasets: NJU2K, STERE, DES, NLPR, SSD, LFSD, and DUT. These datasets can be downloaded from the links provided in http://dpfan.net/d3netbenchmark/.
 
 ### 3. Download pre-trained models
 
@@ -49,4 +49,4 @@ cd CDNet/code/
 python main.py
 ```
 
-**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to the size of $224\times 224$ and properly normalized by the test code. But the pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower, . To utilize CDNet to infer saliency maps normally, please ensure the input depth maps follow this criterion before the test.
+**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to the size of $224\times 224$ and properly normalized by the test code. But the pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower. To utilize CDNet for inferring saliency maps normally, please ensure the input depth maps follow this criterion before the test.

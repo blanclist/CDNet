@@ -25,11 +25,11 @@ We evaluate our CDNet on seven commonly used datasets: NJU2K, STERE, DES, NLPR, 
 
 We provide two pre-trained CDNets:
 
-1. (*CDNet.pth*) CDNet trained on **NJU2K+NLPR** [GoogleDrive](https://drive.google.com/file/d/15x2dnzAySxNa8xXd-L6mF3T0M_QCf9HR/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1AY-NSrXI0IQt2dUzA4BLZw) (fetch code: s0mu). 
+1. (*CDNet.pth*) CDNet trained on **NJU2K+NLPR** [GoogleDrive](https://drive.google.com/file/d/1zb2suDroE7TY9qVw2Ss2CbYYN3gmsKoG/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1nsU9k37phtrMqnAQXbVLsQ) (fetch code: j4gx). 
 
    The evaluation results are listed in Table I of the main paper.
 
-2. (*CDNet_2.pth*) CDNet trained on **NJU2K+NLPR+DUT** [GoogleDrive](https://drive.google.com/file/d/1MgTHjexvU-y_qNu7xoPUJbvhPnaKqSjt/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1PE7oOxjNbTrzAaKfTWsajg) (fetch code: brof). 
+2. (*CDNet_2.pth*) CDNet trained on **NJU2K+NLPR+DUT** [GoogleDrive](https://drive.google.com/file/d/1CS0EXjGUnl-8iR61KhOeLCSCHu-jygh7/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1w_e1mZj_LqTALipevwar8g) (fetch code: go86). 
 
    The evaluation results are listed in Table II of the main paper.
 
@@ -49,4 +49,4 @@ cd CDNet/code/
 python main.py
 ```
 
-**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to the size of $224\times 224$ and properly normalized by the test code. But the pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower. To utilize CDNet to normally generate saliency maps, please ensure that the input depth maps follow this criterion before the test.
+**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to 224*224 and properly normalized by the test code. But the pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower. To utilize CDNet to normally generate saliency maps, please ensure that the input depth maps follow this criterion before the test.

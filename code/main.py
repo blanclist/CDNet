@@ -1,5 +1,6 @@
 from solver import Solver
 import config
+import os
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = config.device

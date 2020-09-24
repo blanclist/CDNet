@@ -49,4 +49,4 @@ cd CDNet/code/
 python main.py
 ```
 
-**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to 224*224 and properly normalized by the test code. But the pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower. To utilize CDNet to normally generate saliency maps, please ensure that the input depth maps follow this criterion before the test.
+**Notes** of the **Input Formats**: The input RGB images and depth maps will be resized to 224*224 and properly normalized by the test code. The pre-trained CDNet requires the input depth maps to follow the criterion: the object is closer to the sensor, the corresponding depth values are lower. To utilize CDNet to normally generate saliency maps, please ensure that the input depth maps follow this criterion before the test.

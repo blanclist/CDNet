@@ -27,11 +27,11 @@ We provide two pre-trained CDNets:
 
 1. (*CDNet.pth*) CDNet trained on **NJU2K+NLPR** [GoogleDrive](https://drive.google.com/file/d/1zb2suDroE7TY9qVw2Ss2CbYYN3gmsKoG/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1nsU9k37phtrMqnAQXbVLsQ) (fetch code: j4gx). 
 
-   The evaluation results are listed in Table I of the main paper.
+   The evaluation results are listed in *Table I* of the main paper.
 
 2. (*CDNet_2.pth*) CDNet trained on **NJU2K+NLPR+DUT** [GoogleDrive](https://drive.google.com/file/d/1CS0EXjGUnl-8iR61KhOeLCSCHu-jygh7/view?usp=sharing) | [BaiduYun](https://pan.baidu.com/s/1w_e1mZj_LqTALipevwar8g) (fetch code: go86). 
 
-   The evaluation results are listed in Table II of the main paper.
+   The evaluation results are listed in *Table II* of the main paper.
 
 ### 4. Configure config.py
 
